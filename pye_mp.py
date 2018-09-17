@@ -1,7 +1,6 @@
 import sys, gc
 if sys.platform in ("linux", "darwin"):
     import os, signal, tty, termios
-    const = lambda x:x
     is_linux = True
 else:
     is_linux = False
@@ -11,9 +10,10 @@ if sys.implementation.name == "micropython":
     from ure import compile as re_compile
 else:
     is_micropython = False
+    const = lambda x:x
     from _io import StringIO
     from re import compile as re_compile
-PYE_VERSION = " V2.25 "
+PYE_VERSION = " V2.26"
 KEY_NONE = const(0x00)
 KEY_UP = const(0x0b)
 KEY_DOWN = const(0x0d)
@@ -48,6 +48,7 @@ KEY_TOGGLE = const(0x01)
 KEY_GET = const(0x0f)
 KEY_MARK = const(0x0c)
 KEY_NEXT = const(0x17)
+KEY_INSERT = const(0xfffb)
 KEY_COMMENT = const(0xfffc)
 KEY_MATCH = const(0xfffd)
 KEY_INDENT = const(0xfffe)
@@ -69,6 +70,7 @@ class Editor:
     "\x03" : KEY_DUP, 
     "\r" : KEY_ENTER,
     "\x7f" : KEY_BACKSPACE, 
+    "\x1b[2~": KEY_INSERT,
     "\x1b[3~": KEY_DELETE,
     "\x1b[Z" : KEY_BACKTAB, 
     "\x19" : KEY_YANK, 
@@ -108,6 +110,7 @@ class Editor:
     autoindent = "y"
     replc_pattern = ""
     comment_char = "\x23 " 
+    insert_flag = 0
     def __init__(self, tab_size, undo_limit):
         self.top_line = self.cur_line = self.row = self.col = self.margin = 0
         self.tab_size = tab_size
@@ -274,10 +277,11 @@ class Editor:
             key, char = self.get_input() 
             if key == KEY_NONE: 
                 if len(prompt) + len(res) < self.width - 2:
-                    res = res[:pos] + char + res[pos:]
-                    self.wr(res[pos])
-                    pos += len(char)
-                    push_msg(res[pos:]) 
+                    res = res[:pos] + char + res[pos + Editor.insert_flag:]
+                    self.wr(char)
+                    pos += 1
+                    if Editor.insert_flag == 0:
+                        push_msg(res[pos:]) 
             elif key in (KEY_ENTER, KEY_TAB): 
                 self.hilite(0)
                 return res
@@ -380,8 +384,8 @@ class Editor:
         if key == KEY_NONE: 
             self.mark = None
             self.undo_add(self.cur_line, [l], 0x20 if char == " " else 0x41)
-            self.content[self.cur_line] = l[:self.col] + char + l[self.col:]
-            self.col += len(char)
+            self.content[self.cur_line] = l[:self.col] + char + l[self.col + Editor.insert_flag:]
+            self.col += 1
         elif key == KEY_DOWN:
             if self.cur_line < self.total_lines - 1:
                 self.cur_line += 1
@@ -658,6 +662,9 @@ class Editor:
                     self.content[i] = ns * " " + self.content[i][ns + ni:]
                 else:
                     self.content[i] = ns * " " + Editor.comment_char + self.content[i][ns:]
+        elif key == KEY_INSERT:
+            Editor.insert_flag = 1 - Editor.insert_flag
+            self.message = ('Insert','Overwrite')[Editor.insert_flag]
         elif key == KEY_REDRAW:
             self.redraw(True)
     def edit_loop(self): 
@@ -668,7 +675,7 @@ class Editor:
         while True:
             self.display_window() 
             key, char = self.get_input() 
-            self.message = '' 
+            self.message = ''
             if key == KEY_QUIT:
                 if self.changed:
                     res = self.line_edit("Content changed! Quit without saving (y/N)? ", "N")

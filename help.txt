@@ -1,4 +1,4 @@
-The editor works in Insert mode. Cursor Keys, Home, End, PgUp and PgDn work
+The editor starts in Insert mode. Cursor Keys, Home, End, PgUp and PgDn work
 as you would expect. Some functions are available with Ctrl-Keys. Keyboard Mapping:
 
 Key    Alternative  Function
@@ -29,6 +29,7 @@ Del                 Delete char under cursor. At the end of the line join the
                     next line. If the mark is set, delete the marked line range.
                     If Autoindent is enabled, Del at the line's end also removes
                     leading spaces from the then joined line.
+Ins                 Toggle between insert and replace mode
 Tab     Ctrl-I      Tab. Insert spaces at the cursor position up to the next
                     tab location, moving the cursor. If the mark is set, indent
                     the lines between the mark and cursor.

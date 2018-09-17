@@ -20,7 +20,7 @@ Goto, Get file and Flag settings.
 **Warning: Due to a glitch in the pycom.io ports of micropython before V1.9.0
  Ctrl-C must not be used for copying in these ports. Use Ctrl-D instead. Unfortunately, Ctrl-C will terminate the editor (Bug catching KeyboardInterrupts Exceptions).**
 
-The editor assumes a VT100 terminal. It works in Insert mode. The following list
+The editor assumes a VT100 terminal. It starts in Insert mode. The following list
 shows most of the commands. Commands marked with (opt) may not be supported in
  minimal versions:
 
@@ -33,6 +33,7 @@ shows most of the commands. Commands marked with (opt) may not be supported in
 |Enter|Enter a line break at the cursor position. Auto-indent is supported|
 |Backspace|Delete char left to the  cursor (The key must be set to ASCII-Del)|
 |Del|Delete the char under the cursor. At the end of the line join the next line. If autoindent is enabled, delete also the leading spaces of the joined line. If lines are marked, delete the marked area|
+|Ins|Toggle between insert and replace mode|
 |Tab & Backtab|Insert or remove spaces up to the next tab position. If lines are marked, indent or unindent (opt)|
 |Ctrl-O|Open a new file. If the file name is left empty, an empty buffer is opened|
 |Ctrl-W|Toggle to the next file buffer|
@@ -383,3 +384,5 @@ remaining are Linux/CPython vs. MicroPython
 
 **2.25** Version number is shown with redraw command, and thus at startup and
 window change
+
+**2.26** Insert/Replace mode toggle
