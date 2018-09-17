@@ -21,7 +21,6 @@
 import sys, gc
 if sys.platform in ("linux", "darwin"):
     import os, signal, tty, termios
-    const = lambda x:x
     is_linux = True
 else:
     is_linux = False
@@ -32,10 +31,11 @@ if sys.implementation.name == "micropython":
     from ure import compile as re_compile
 else:
     is_micropython = False
+    const = lambda x:x
     from _io import StringIO
     from re import compile as re_compile
 
-PYE_VERSION   = " V2.25 "
+PYE_VERSION   = " V2.26"
 KEY_NONE      = const(0x00)
 KEY_UP        = const(0x0b)
 KEY_DOWN      = const(0x0d)
@@ -483,7 +483,7 @@ class Editor:
         if key == KEY_NONE: ## character to be added
             self.mark = None
             self.undo_add(self.cur_line, [l], 0x20 if char == " " else 0x41)
-            self.content[self.cur_line] = l[:self.col] + char + l[self.col+Editor.insert_flag:]
+            self.content[self.cur_line] = l[:self.col] + char + l[self.col + Editor.insert_flag:]
             self.col += 1
         elif key == KEY_DOWN:
             if self.cur_line < self.total_lines - 1:

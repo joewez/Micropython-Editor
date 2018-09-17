@@ -76,6 +76,7 @@ KEY_TOGGLE    = const(0x01)
 KEY_GET       = const(0x0f)
 KEY_MARK      = const(0x0c)
 KEY_NEXT      = const(0x17)
+KEY_INSERT    = const(0xfffb)
 KEY_COMMENT   = const(0xfffc)
 KEY_MATCH     = const(0xfffd)
 KEY_INDENT    = const(0xfffe)
@@ -99,6 +100,7 @@ class Editor:
     "\x03"   : KEY_DUP, ## Ctrl-C
     "\r"     : KEY_ENTER,
     "\x7f"   : KEY_BACKSPACE, ## Ctrl-? (127)
+    "\x1b[2~": KEY_INSERT,
     "\x1b[3~": KEY_DELETE,
     "\x1b[Z" : KEY_BACKTAB, ## Shift Tab
     "\x19"   : KEY_YANK, ## Ctrl-Y alias to Ctrl-X
@@ -140,6 +142,7 @@ class Editor:
     autoindent = "y"
     replc_pattern = ""
     comment_char = "\x23 "
+    insert_flag = 0
 
     def __init__(self, tab_size, undo_limit):
         self.top_line = self.cur_line = self.row = self.col = self.margin = 0
@@ -374,10 +377,11 @@ class Editor:
             key, char = self.get_input()  ## Get Char of Fct.
             if key == KEY_NONE: ## char to be inserted
                 if len(prompt) + len(res) < self.width - 2:
-                    res = res[:pos] + char + res[pos:]
-                    self.wr(res[pos])
-                    pos += len(char)
-                    push_msg(res[pos:]) ## update tail
+                    res = res[:pos] + char + res[pos + Editor.insert_flag:]
+                    self.wr(char)
+                    pos += 1
+                    if Editor.insert_flag == 0:
+                        push_msg(res[pos:]) ## update tail
             elif key in (KEY_ENTER, KEY_TAB): ## Finis
                 self.hilite(0)
                 return res
@@ -495,7 +499,7 @@ class Editor:
             self.mark = None
             self.undo_add(self.cur_line, [l], 0x20 if char == " " else 0x41)
 ## ' ' * jut is an empty string for jut <= 0
-            self.content[self.cur_line] = l[:self.col] + ' ' * jut + char + l[self.col:]
+            self.content[self.cur_line] = l[:self.col] + ' ' * jut + char + l[self.col + Editor.insert_flag:]
             self.col += len(char)
         elif key == KEY_DOWN:
             if self.cur_line < self.total_lines - 1:
@@ -780,6 +784,9 @@ class Editor:
                     self.content[i] = ns * " " + self.content[i][ns + ni:]
                 else:
                     self.content[i] = ns * " " + Editor.comment_char + self.content[i][ns:]
+        elif key == KEY_INSERT:
+            Editor.insert_flag = 1 - Editor.insert_flag
+            self.message =  ('Insert','Overwrite')[Editor.insert_flag]
         elif key == KEY_REDRAW:
             self.redraw(True)
 
