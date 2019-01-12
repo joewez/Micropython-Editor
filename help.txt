@@ -36,7 +36,7 @@ BackTab Ctrl-U      Back Tab. Remove spaces left to the cursor position up to
                     the next tab location or the next non-space char, and moves
                     the cursor.  If the mark is set, un-indent the lines
                     between the mark and the cursor.
-Ctrl-Q              Quit a file buffer or the line edit mode. If the edited text
+Ctrl-Q  Alt-Q       Quit a file buffer or the line edit mode. If the edited text
                     was changed, ask for confirmation. If the last buffer is
                     closed, the editor will terminate too.
 Ctrl-S              Save to file. The file name will be prompted for. The
